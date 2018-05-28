@@ -84,7 +84,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FunBooksAndVideos\FunBooksAndVideos.csproj">
-      <Project>{7918D9BB-2DEF-4975-9387-FC6586A8CC8B}</Project>
+      <Project>{F8A30B58-FC55-4347-BEA9-C9718368E0CF}</Project>
       <Name>FunBooksAndVideos</Name>
     </ProjectReference>
   </ItemGroup>
