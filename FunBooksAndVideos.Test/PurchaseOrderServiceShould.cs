@@ -11,16 +11,19 @@ namespace FunBooksAndVideos.Test
         private Mock<ICustomerService> _customerServiceMock;
         private ActivateMembership _activateMembership;
         private Order _orderWithMembership;
+        private Order _orderWithProducts;
 
         public PurchaseOrderServiceShould()
         {
             _customerServiceMock = new Mock<ICustomerService>();
             _activateMembership = new ActivateMembership(_customerServiceMock.Object);
             _orderWithMembership = Order.CreateOrderWithMembership(OrderId, CustomerId);
+            var products = new List<Product>();
+            _orderWithProducts = Order.CreateOrderWithProducts(OrderId, CustomerId, products);
         }
 
         [Fact]
-        public void ProcessMembershipOrder()
+        public void ActivateMembershipWhenProcessMembershipOrder()
         {
             var businessRules = new List<IBusinessRule>{_activateMembership};
             var purchaseOrderService = new PurchaseOrderService(businessRules);
@@ -29,6 +32,21 @@ namespace FunBooksAndVideos.Test
 
             _customerServiceMock.Verify(c => c.ActivateMembership(CustomerId, It.IsAny<Membership>()));
         }
+
+        [Fact]
+        public void NotActivateMembershipWhenProcessProductsOrder()
+        {
+            var businessRules = new List<IBusinessRule> { _activateMembership };
+            var purchaseOrderService = new PurchaseOrderService(businessRules);
+
+            purchaseOrderService.Process(_orderWithProducts);
+
+            _customerServiceMock.Verify(c => c.ActivateMembership(CustomerId, It.IsAny<Membership>()), Times.Never);
+        }
+    }
+
+    public class Product
+    {
     }
 
     public interface ICustomerService
@@ -61,6 +79,7 @@ namespace FunBooksAndVideos.Test
 
     public class Order
     {
+        private readonly List<Product> _products;
         public string OrderId { get; }
         public string CustomerId { get; }
         public Membership Membership { get; }
@@ -72,11 +91,23 @@ namespace FunBooksAndVideos.Test
             return new Order(orderId, customerId, new Membership());
         }
 
+        public static Order CreateOrderWithProducts(string orderId, string customerId, List<Product> products)
+        {
+            return new Order(orderId, customerId, products);
+        }
+
         private Order(string orderId, string customerId, Membership membership)
         {
             OrderId = orderId;
             CustomerId = customerId;
             this.Membership = membership;
+        }
+
+        private Order(string orderId, string customerId, List<Product> products)
+        {
+            _products = products;
+            OrderId = orderId;
+            CustomerId = customerId;
         }
     }
 
