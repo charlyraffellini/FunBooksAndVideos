@@ -6,17 +6,28 @@ namespace FunBooksAndVideos.Test
 {
     public class PurchaseOrderServiceShould
     {
+        private const string OrderId = "Order Id";
+        private const string CustomerId = "Customer Id";
+        private Mock<ICustomerService> _customerServiceMock;
+        private ActivateMembership _activateMembership;
+        private Order _orderWithMembership;
+
+        public PurchaseOrderServiceShould()
+        {
+            _customerServiceMock = new Mock<ICustomerService>();
+            _activateMembership = new ActivateMembership(_customerServiceMock.Object);
+            _orderWithMembership = Order.CreateOrderWithMembership(OrderId, CustomerId);
+        }
+
         [Fact]
         public void ProcessMembershipOrder()
         {
-            var customerServiceMock = new Mock<ICustomerService>();
-            var businessRules = new List<IBusinessRule>{new ActivateMembership(customerServiceMock.Object)};
+            var businessRules = new List<IBusinessRule>{_activateMembership};
             var purchaseOrderService = new PurchaseOrderService(businessRules);
-            var orderWithMembership = Order.CreateOrderWithMembership("Order Id", "Customer Id");
 
-            purchaseOrderService.Process(orderWithMembership);
+            purchaseOrderService.Process(_orderWithMembership);
 
-            customerServiceMock.Verify(c => c.ActivateMembership("Customer Id", It.IsAny<Membership>()));
+            _customerServiceMock.Verify(c => c.ActivateMembership(CustomerId, It.IsAny<Membership>()));
         }
     }
 
